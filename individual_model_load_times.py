@@ -64,12 +64,12 @@ for sbmlfile in sbmlfiles:
     simtime["LLJit"][sbmlfile] = []
     simtime["MCJit"][sbmlfile] = []
 
-for n in range(5):
-    print("Repeat", n)
-    for sbmlfile in sbmlfiles:
-        # print(sbmlfile)
-        for (backend, bstr) in [(roadrunner.Config.LLJIT, "LLJit"), (roadrunner.Config.MCJIT, "MCJit")]:
-            roadrunner.Config.setValue(roadrunner.Config.LLVM_BACKEND, backend)
+for (backend, bstr) in [(roadrunner.Config.LLJIT, "LLJit"), (roadrunner.Config.MCJIT, "MCJit")]:
+    roadrunner.Config.setValue(roadrunner.Config.LLVM_BACKEND, backend)
+    for n in range(5):
+        print("Repeat", n)
+        for sbmlfile in sbmlfiles:
+            # print(sbmlfile)
             try:
                 pre = time.perf_counter()
                 r = roadrunner.RoadRunner(sbmlfile)
