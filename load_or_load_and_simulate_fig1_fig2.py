@@ -13,7 +13,8 @@ import numpy as np
 from scriptLib import getSBMLFilesFromBiomodels
 
 roadrunner.Config.setValue(roadrunner.Config.LOADSBMLOPTIONS_RECOMPILE, True)
-
+nrepeats = 10
+ncores = 23
 
 def loadOnly(sbmlfile):
     roadrunner.RoadRunner(sbmlfile)
@@ -87,7 +88,7 @@ def saveTimeVecs(timevecs, threadrange, filename):
     
 if __name__ == '__main__':
     sbmlfiles = getSBMLFilesFromBiomodels(biomds = "C:/Users/Lucian/Desktop/temp-biomodels/final")
-    (timevecs, threadrange) = runExperiment(sbmlfiles, 10, 3, loadOnly, True)
+    (timevecs, threadrange) = runExperiment(sbmlfiles, nrepeats, ncores, loadOnly, True)
     saveTimeVecs(timevecs, threadrange, "fig1_only_load.csv")
-    (timevecs, threadrange) = runExperiment(sbmlfiles, 10, 3, loadAndSimulate, False)
+    (timevecs, threadrange) = runExperiment(sbmlfiles, nrepeats, ncores, loadAndSimulate, False)
     saveTimeVecs(timevecs, threadrange, "fig2_load_and_sim.csv")
