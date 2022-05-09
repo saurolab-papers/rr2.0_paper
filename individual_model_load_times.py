@@ -66,7 +66,7 @@ def writeFullCSV(filename):
 
 
 
-sbmlfiles = getSBMLFilesFromBiomodels()
+sbmlfiles = getSBMLFilesFromBiomodels(biomds = "C:/Users/Lucian/Desktop/temp-biomodels/final")
 sbmlfiles = sbmlfiles[:10]
 
 loadtime = {}
