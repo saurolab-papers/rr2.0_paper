@@ -78,7 +78,7 @@ sbml_ids = [os.path.splitext(os.path.split(i)[1])[0] for i in sbmlfiles]
 #     simtime["LLJit"][sbmlfile] = []
 #     simtime["MCJit"][sbmlfile] = []
 
-def collect_data_no_switching(n_repeats: int = 5, n_sbml_files: int = 0, pickle_file: Optional[str] = None):
+def collect_data_backend_file_repeat(n_repeats: int = 5, n_sbml_files: int = 0, pickle_file: Optional[str] = None):
     """Measure the time taken to load and simulate sbml models. Loops are structured
     so that all LLJit are run first and then all MCJit are run second.
 
@@ -139,7 +139,7 @@ def collect_data_no_switching(n_repeats: int = 5, n_sbml_files: int = 0, pickle_
     return df
 
 
-def collect_data_switching(n_repeats: int = 5, n_sbml_files: int = 0, pickle_file: Optional[str] = None):
+def collect_data_file_backend_repeat(n_repeats: int = 5, n_sbml_files: int = 0, pickle_file: Optional[str] = None):
     """Measure the time taken to load and simulate sbml models. Loops are structured
     so that for each sbml file we run the LLJit followed by MCJit.
 
@@ -200,6 +200,66 @@ def collect_data_switching(n_repeats: int = 5, n_sbml_files: int = 0, pickle_fil
         df.to_pickle(pickle_file)
     return df
 
+def collect_data_repeat_file_backend(n_repeats: int = 5, n_sbml_files: int = 0, pickle_file: Optional[str] = None):
+    """Measure the time taken to load and simulate sbml models. Loops are structured
+    so that for each sbml file we run the LLJit followed by MCJit.
+
+    Args:
+        n_repeats: number of repeats to collect
+        n_sbml_files: how many sbml file to use. Default 0 means do all
+        pickle_file: if not None, read from pickle file. If not exists, create it.
+
+    Returns:
+
+    """
+    if pickle_file is not None:
+        if os.path.isfile(pickle_file):
+            return pd.read_pickle(pickle_file)
+
+    if n_sbml_files == 0:
+        n_sbml_files = len(sbmlfiles)
+
+    dct = dict()
+
+    for n in range(n_repeats):
+        dct[n] = {}
+        for sbmlfile in sbmlfiles[:n_sbml_files]:
+            print("sbmlfile: ", sbmlfile)
+            dct[n][sbmlfile] = {}
+            for (backend, bstr) in [(roadrunner.Config.LLJIT, "LLJit"), (roadrunner.Config.MCJIT, "MCJit")]:
+                roadrunner.Config.setValue(roadrunner.Config.LLVM_BACKEND, backend)
+                dct[n][sbmlfile][bstr] = {}
+                # print("Repeat", n)
+                try:
+                    pre = time.perf_counter()
+                    r = roadrunner.RoadRunner(sbmlfile)
+                    post_load = time.perf_counter()
+                    r.simulate(0, 100, 1000)
+                    post_sim = time.perf_counter()
+                    dct[n][sbmlfile][bstr]["loadtime"] = post_load - pre
+                    dct[n][sbmlfile][bstr]["simtime"] = post_sim - pre
+                    # loadtime[bstr][sbmlfile].append(post_load - pre)
+                    # simtime[bstr][sbmlfile].append(post_sim - post_load)
+                    # print("simtime[bstr][sbmlfile]: ", simtime[bstr][sbmlfile])
+                    # print("loadtime[bstr][sbmlfile]: ", loadtime[bstr][sbmlfile])
+                except Exception as e:
+                    continue
+                    # print(sbmlfile)
+                    # print(e)
+            dct[n][sbmlfile] = pd.DataFrame(dct[n][sbmlfile])
+        dct[n] = pd.concat(dct[n])
+
+    df = pd.concat(dct)
+    df = pd.DataFrame(df.stack())
+
+    df.index.names = ["repeat", "sbml", "which", "jit"]
+    df.columns = ["time"]
+    df = df.pivot_table(index=["jit", "sbml", "repeat"], columns="which", values="time")
+
+    if pickle_file is not None:
+        df.to_pickle(pickle_file)
+    return df
+
 
 def plot_mcjit_over_lljit(data: pd.DataFrame, label):
     """Divide MCJit by LLJit gives us speed up (>1) or slowdown (<1) by LLJit over MCJit
@@ -227,7 +287,9 @@ def plot_mcjit_over_lljit(data: pd.DataFrame, label):
 
     """
 
+
     ratio = data.loc["MCJit"] / data.loc["LLJit"]
+    # ratio = data.loc["LLJit"] / data.loc["MCJit"]
     stats: pd.DataFrame = ratio.groupby(level=["sbml"]).aggregate(np.mean)
     # plt.bar(range(stats.shape[0]), stats["loadtime"])
 
@@ -249,15 +311,23 @@ if __name__ == "__main__":
     # Note: These have already been run on my 8 core dell xps, i9.
     #  Passing in the PICKLE_* variable to collect_data_* functions will just load
     #  saved data from file.
-    PICKLE_DATA_NO_SWITCHING = os.path.join(os.path.dirname(__file__), "rr_load_times_data_no_switching.pickle")
-    PICKLE_DATA_SWITCHING = os.path.join(os.path.dirname(__file__), "rr_load_times_data_switching.pickle")
-    switch_data = collect_data_switching(n_sbml_files=0, pickle_file=PICKLE_DATA_SWITCHING)
-    no_switch_data = collect_data_no_switching(pickle_file=PICKLE_DATA_NO_SWITCHING)
+    PICKLE_DATA_NO_SWITCHING = os.path.join(os.path.dirname(__file__), "rr_load_times_backend_file_repeat.pickle")
+    PICKLE_DATA_SWITCHING = os.path.join(os.path.dirname(__file__), "rr_load_times_file_backend_repeat.pickle")
+    PICKLE_DATA_SWITCHING_REPEAT_FIRST = os.path.join(os.path.dirname(__file__),
+                                                      "rr_load_times_repeat_file_backend.pickle")
+    file_backend_repeat_data = collect_data_file_backend_repeat(n_sbml_files=0, pickle_file=PICKLE_DATA_SWITCHING)
+    backend_file_repeat_data = collect_data_backend_file_repeat(pickle_file=PICKLE_DATA_NO_SWITCHING)
 
-    plot_mcjit_over_lljit(no_switch_data, label="NoSwitchData")
-    plot_mcjit_over_lljit(switch_data, label="SwitchData")
+    # data where repeat/file/backends are looped over
+    repeat_file_backend_data = collect_data_repeat_file_backend(n_sbml_files=0, pickle_file=PICKLE_DATA_SWITCHING_REPEAT_FIRST)
 
-    print(no_switch_data - switch_data)
+    print(repeat_file_backend_data)
+
+    plot_mcjit_over_lljit(backend_file_repeat_data, label="backend_file_repeat")
+    plot_mcjit_over_lljit(file_backend_repeat_data, label="file_backend_repeat")
+    plot_mcjit_over_lljit(repeat_file_backend_data, label="repeats_files_backends")
+
+    print(backend_file_repeat_data - file_backend_repeat_data)
 
     # print(no_switch_data)
     # print(switch_data)
