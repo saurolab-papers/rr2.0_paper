@@ -200,6 +200,7 @@ def collect_data_file_backend_repeat(n_repeats: int = 5, n_sbml_files: int = 0, 
         df.to_pickle(pickle_file)
     return df
 
+
 def collect_data_repeat_file_backend(n_repeats: int = 5, n_sbml_files: int = 0, pickle_file: Optional[str] = None):
     """Measure the time taken to load and simulate sbml models. Loops are structured
     so that for each sbml file we run the LLJit followed by MCJit.
@@ -287,7 +288,6 @@ def plot_mcjit_over_lljit(data: pd.DataFrame, label):
 
     """
 
-
     ratio = data.loc["MCJit"] / data.loc["LLJit"]
     # ratio = data.loc["LLJit"] / data.loc["MCJit"]
     stats: pd.DataFrame = ratio.groupby(level=["sbml"]).aggregate(np.mean)
@@ -310,28 +310,52 @@ def plot_mcjit_over_lljit(data: pd.DataFrame, label):
 if __name__ == "__main__":
 
     PLOT_MCJIT_OVER_LLJIT = False
-
-
+    COMPARE_LOOPS = True
 
     # Note: These have already been run on my 8 core dell xps, i9.
     #  Passing in the PICKLE_* variable to collect_data_* functions will just load
     #  saved data from file.
-    PICKLE_DATA_BACKEND_FILE_REPEAT = os.path.join(os.path.dirname(__file__), "rr_load_times_backend_file_repeat.pickle")
-    PICKLE_DATA_FILE_BACKEND_REPEAT = os.path.join(os.path.dirname(__file__), "rr_load_times_file_backend_repeat.pickle")
+    PICKLE_DATA_BACKEND_FILE_REPEAT = os.path.join(os.path.dirname(__file__),
+                                                   "rr_load_times_backend_file_repeat.pickle")
+    PICKLE_DATA_FILE_BACKEND_REPEAT = os.path.join(os.path.dirname(__file__),
+                                                   "rr_load_times_file_backend_repeat.pickle")
     PICKLE_DATA_REPEAT_FILE_BACKEND = os.path.join(os.path.dirname(__file__),
-                                                      "rr_load_times_repeat_file_backend.pickle")
-    file_backend_repeat_data = collect_data_file_backend_repeat(n_sbml_files=0, pickle_file=PICKLE_DATA_FILE_BACKEND_REPEAT)
+                                                   "rr_load_times_repeat_file_backend.pickle")
+    file_backend_repeat_data = collect_data_file_backend_repeat(n_sbml_files=0,
+                                                                pickle_file=PICKLE_DATA_FILE_BACKEND_REPEAT)
     backend_file_repeat_data = collect_data_backend_file_repeat(pickle_file=PICKLE_DATA_BACKEND_FILE_REPEAT)
-    repeat_file_backend_data = collect_data_repeat_file_backend(n_sbml_files=0, pickle_file=PICKLE_DATA_REPEAT_FILE_BACKEND)
+    repeat_file_backend_data = collect_data_repeat_file_backend(n_sbml_files=0,
+                                                                pickle_file=PICKLE_DATA_REPEAT_FILE_BACKEND)
 
-    print(repeat_file_backend_data)
+    # print(repeat_file_backend_data)
 
     if PLOT_MCJIT_OVER_LLJIT:
         plot_mcjit_over_lljit(backend_file_repeat_data, label="backend_file_repeat")
         plot_mcjit_over_lljit(file_backend_repeat_data, label="file_backend_repeat")
         plot_mcjit_over_lljit(repeat_file_backend_data, label="repeats_files_backends")
 
-    print(backend_file_repeat_data - file_backend_repeat_data)
+    if COMPARE_LOOPS:
+        # LLJit compare the different loops
+        fname = os.path.join(os.path.dirname(__file__), "LLJitOnlyLoopStats.csv")
+        one : pd.DataFrame = file_backend_repeat_data.loc["LLJit"]
+        one['loopid'] = "file_backend_repeat"
+        one.set_index("loopid", append=True, inplace=True)
+
+        two = backend_file_repeat_data.loc["LLJit"]
+        two['loopid'] = "backend_file_repeat"
+        two.set_index("loopid", append=True, inplace=True)
+
+        three = repeat_file_backend_data.loc["LLJit"]
+        three['loopid'] = "repeat_file_backend"
+        three.set_index("loopid", append=True, inplace=True)
+        df = pd.concat([one, two, three], axis=0)
+        df = df.unstack(level="loopid")
+        df.columns = df.columns.swaplevel(0, 1)
+        stats = df.groupby(level=["sbml"]).aggregate([np.mean, np.std])
+        stats.to_csv(fname)
+        print(stats)
+
+    # print(backend_file_repeat_data - file_backend_repeat_data)
 
     # print(no_switch_data)
     # print(switch_data)
