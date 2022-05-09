@@ -303,7 +303,7 @@ def plot_mcjit_over_lljit(data: pd.DataFrame, label):
     sns.displot(stats["simtime"])
     plt.title(f"Simulation Times (MCJit / LLJit) {label}")
     fname = os.path.join(os.path.dirname(__file__), f"simtimes_{label}.png")
-    plt.savefig(fname, dpi=25, bbox_inches="tight")
+    plt.savefig(fname, dpi=250, bbox_inches="tight")
     plt.show()
 
 
