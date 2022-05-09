@@ -11,7 +11,7 @@ import time
 import numpy as np
 from scriptLib import getSBMLFilesFromBiomodels
 
-nrepeats= 5
+nrepeats= 1
 
 roadrunner.Config.setValue(roadrunner.Config.LOADSBMLOPTIONS_RECOMPILE, True)
 
@@ -68,7 +68,6 @@ def writeFullCSV(filename):
 
 
 sbmlfiles = getSBMLFilesFromBiomodels(biomds = "C:/Users/Lucian/Desktop/temp-biomodels/final")
-sbmlfiles = sbmlfiles[:10]
 
 loadtime = {}
 loadtime["LLJit"] = {}
@@ -100,7 +99,7 @@ for n in range(nrepeats):
                 post_load = time.perf_counter()
                 r.integrator.setValue("relative_tolerance", 1e-11)
                 r.integrator.setValue("absolute_tolerance", 1e-17)
-                r.simulate(0, 100, 1000)
+                r.simulate(0, 5000, 50000)
                 post_sim = time.perf_counter()
                 loadtime[bstr][sbmlfile].append(post_load - pre)
                 simtime[bstr][sbmlfile].append(post_sim - post_load)
