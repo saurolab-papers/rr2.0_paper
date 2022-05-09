@@ -10,36 +10,11 @@ from os import walk
 import time
 import concurrent
 import numpy as np
+from scriptLib import getSBMLFilesFromBiomodels
+
+roadrunner.Config.setValue(roadrunner.Config.LOADSBMLOPTIONS_RECOMPILE, True)
 
 
-def getSBMLFilesFromBiomodels(biomds = "C:/Users/Lucian/Desktop/temp-biomodels/final"):
-    delays = ["BIOMD0000000024", "BIOMD0000000025", "BIOMD0000000034", "BIOMD0000000154", "BIOMD0000000155", "BIOMD0000000196", "BIOMD0000000841"]
-    bmfiles = []
-    for root, __, files in walk(biomds):
-        include = True
-        for delay in delays:
-            if delay in root:
-                include = False
-        if include:
-            bmfiles.append((root, files))
-        
-    sbmlfiles = []
-    
-    for (root, files) in bmfiles:
-        
-        for file in files:
-            if ".xml" not in file:
-                continue
-            sbmlfiles.append(root + "/" + file)
-    
-    #If we only want a few files for testing.
-    #sbmlfiles = sbmlfiles[:10]
-    return sbmlfiles
-    
-    # timing = {}
-    # for sbmlfile in sbmlfiles:
-    #     timing[sbmlfile] = []"w")
-    
 def loadOnly(sbmlfile):
     roadrunner.RoadRunner(sbmlfile)
     
@@ -111,7 +86,7 @@ def saveTimeVecs(timevecs, threadrange, filename):
     out.close()
     
 if __name__ == '__main__':
-    sbmlfiles = getSBMLFilesFromBiomodels()
+    sbmlfiles = getSBMLFilesFromBiomodels(biomds = "C:/Users/Lucian/Desktop/temp-biomodels/final")
     (timevecs, threadrange) = runExperiment(sbmlfiles, 10, 3, loadOnly, True)
     saveTimeVecs(timevecs, threadrange, "fig1_only_load.csv")
     (timevecs, threadrange) = runExperiment(sbmlfiles, 10, 3, loadAndSimulate, False)

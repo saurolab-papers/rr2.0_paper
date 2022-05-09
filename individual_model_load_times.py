@@ -13,6 +13,7 @@ from scriptLib import getSBMLFilesFromBiomodels
 
 nrepeats= 5
 
+roadrunner.Config.setValue(roadrunner.Config.LOADSBMLOPTIONS_RECOMPILE, True)
 
 def writeTimesFor(sbmlfile, timedata, times):
     averageLL = np.average(timedata["LLJit"][sbmlfile])
@@ -97,6 +98,8 @@ for n in range(nrepeats):
                 pre = time.perf_counter()
                 r = roadrunner.RoadRunner(sbmlfile)
                 post_load = time.perf_counter()
+                r.integrator.setValue("relative_tolerance", 1e-11)
+                r.integrator.setValue("absolute_tolerance", 1e-17)
                 r.simulate(0, 100, 1000)
                 post_sim = time.perf_counter()
                 loadtime[bstr][sbmlfile].append(post_load - pre)
@@ -105,61 +108,4 @@ for n in range(nrepeats):
                 print(sbmlfile)
                 print(e)
 
-writeFullCSV("individual_times_backend_changing.csv") 
-
-#Run everything, looping over the backend first:
-for sbmlfile in sbmlfiles:
-    simtime["LLJit"][sbmlfile] = []
-    simtime["MCJit"][sbmlfile] = []
-
-
-for (backend, bstr) in [(roadrunner.Config.LLJIT, "LLJit"), (roadrunner.Config.MCJIT, "MCJit")]:
-    roadrunner.Config.setValue(roadrunner.Config.LLVM_BACKEND, backend)
-    for n in range(nrepeats):
-        print("Repeat", n)
-        for sbmlfile in sbmlfiles:
-            # print(sbmlfile)
-            try:
-                pre = time.perf_counter()
-                r = roadrunner.RoadRunner(sbmlfile)
-                post_load = time.perf_counter()
-                # r.integrator.relative_tolerance = 1e-18
-                # r.integrator.absolute_tolerance = 1e-22
-                r.simulate(0, 100, 1000)
-                post_sim = time.perf_counter()
-                loadtime[bstr][sbmlfile].append(post_load - pre)
-                simtime[bstr][sbmlfile].append(post_sim - post_load)
-            except Exception as e:
-                print(sbmlfile)
-                print(e)
-
-writeFullCSV("individual_times_backend_constant.csv") 
-
-#Run everything, looping over the backend last:
-for sbmlfile in sbmlfiles:
-    simtime["LLJit"][sbmlfile] = []
-    simtime["MCJit"][sbmlfile] = []
-
-
-for n in range(nrepeats):
-    print("Repeat", n)
-    for sbmlfile in sbmlfiles:
-        # print(sbmlfile)
-        for (backend, bstr) in [(roadrunner.Config.LLJIT, "LLJit"), (roadrunner.Config.MCJIT, "MCJit")]:
-            roadrunner.Config.setValue(roadrunner.Config.LLVM_BACKEND, backend)
-            try:
-                pre = time.perf_counter()
-                r = roadrunner.RoadRunner(sbmlfile)
-                post_load = time.perf_counter()
-                r.simulate(0, 100, 1000)
-                post_sim = time.perf_counter()
-                loadtime[bstr][sbmlfile].append(post_load - pre)
-                simtime[bstr][sbmlfile].append(post_sim - post_load)
-            except Exception as e:
-                print(sbmlfile)
-                print(e)
-
-writeFullCSV("individual_times_backend_changing_postscript.csv") 
-
-
-      
+writeFullCSV("individual_times.csv") 
