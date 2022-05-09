@@ -308,24 +308,28 @@ def plot_mcjit_over_lljit(data: pd.DataFrame, label):
 
 
 if __name__ == "__main__":
+
+    PLOT_MCJIT_OVER_LLJIT = False
+
+
+
     # Note: These have already been run on my 8 core dell xps, i9.
     #  Passing in the PICKLE_* variable to collect_data_* functions will just load
     #  saved data from file.
-    PICKLE_DATA_NO_SWITCHING = os.path.join(os.path.dirname(__file__), "rr_load_times_backend_file_repeat.pickle")
-    PICKLE_DATA_SWITCHING = os.path.join(os.path.dirname(__file__), "rr_load_times_file_backend_repeat.pickle")
-    PICKLE_DATA_SWITCHING_REPEAT_FIRST = os.path.join(os.path.dirname(__file__),
+    PICKLE_DATA_BACKEND_FILE_REPEAT = os.path.join(os.path.dirname(__file__), "rr_load_times_backend_file_repeat.pickle")
+    PICKLE_DATA_FILE_BACKEND_REPEAT = os.path.join(os.path.dirname(__file__), "rr_load_times_file_backend_repeat.pickle")
+    PICKLE_DATA_REPEAT_FILE_BACKEND = os.path.join(os.path.dirname(__file__),
                                                       "rr_load_times_repeat_file_backend.pickle")
-    file_backend_repeat_data = collect_data_file_backend_repeat(n_sbml_files=0, pickle_file=PICKLE_DATA_SWITCHING)
-    backend_file_repeat_data = collect_data_backend_file_repeat(pickle_file=PICKLE_DATA_NO_SWITCHING)
-
-    # data where repeat/file/backends are looped over
-    repeat_file_backend_data = collect_data_repeat_file_backend(n_sbml_files=0, pickle_file=PICKLE_DATA_SWITCHING_REPEAT_FIRST)
+    file_backend_repeat_data = collect_data_file_backend_repeat(n_sbml_files=0, pickle_file=PICKLE_DATA_FILE_BACKEND_REPEAT)
+    backend_file_repeat_data = collect_data_backend_file_repeat(pickle_file=PICKLE_DATA_BACKEND_FILE_REPEAT)
+    repeat_file_backend_data = collect_data_repeat_file_backend(n_sbml_files=0, pickle_file=PICKLE_DATA_REPEAT_FILE_BACKEND)
 
     print(repeat_file_backend_data)
 
-    plot_mcjit_over_lljit(backend_file_repeat_data, label="backend_file_repeat")
-    plot_mcjit_over_lljit(file_backend_repeat_data, label="file_backend_repeat")
-    plot_mcjit_over_lljit(repeat_file_backend_data, label="repeats_files_backends")
+    if PLOT_MCJIT_OVER_LLJIT:
+        plot_mcjit_over_lljit(backend_file_repeat_data, label="backend_file_repeat")
+        plot_mcjit_over_lljit(file_backend_repeat_data, label="file_backend_repeat")
+        plot_mcjit_over_lljit(repeat_file_backend_data, label="repeats_files_backends")
 
     print(backend_file_repeat_data - file_backend_repeat_data)
 
