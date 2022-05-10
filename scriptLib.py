@@ -9,6 +9,7 @@ def getSBMLFilesFromBiomodels(biomds = "C:/Users/Lucian/Desktop/temp-biomodels/f
         "BIOMD0000000153",
         "BIOMD0000000250",
         "BIOMD0000000251",
+        "BIOMD0000000339",
         "BIOMD0000000404",
         "BIOMD0000000527",
         "BIOMD0000000540",
@@ -36,7 +37,8 @@ def getSBMLFilesFromBiomodels(biomds = "C:/Users/Lucian/Desktop/temp-biomodels/f
         "BIOMD0000000883",
         "BIOMD0000000952",
         "BIOMD0000000968",
-        "BIOMD0000001042",]
+        "BIOMD0000001042",
+        ]
     bmfiles = []
     for root, __, files in walk(biomds):
         include = True

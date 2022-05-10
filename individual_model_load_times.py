@@ -68,6 +68,7 @@ def writeFullCSV(filename):
 
 
 sbmlfiles = getSBMLFilesFromBiomodels(biomds = "C:/Users/Lucian/Desktop/temp-biomodels/final")
+badfiles = open("badfiles.txt", "w")
 
 loadtime = {}
 loadtime["LLJit"] = {}
@@ -97,14 +98,17 @@ for n in range(nrepeats):
                 pre = time.perf_counter()
                 r = roadrunner.RoadRunner(sbmlfile)
                 post_load = time.perf_counter()
-                r.integrator.setValue("relative_tolerance", 1e-11)
-                r.integrator.setValue("absolute_tolerance", 1e-17)
-                r.simulate(0, 5000, 50000)
+                # r.integrator.setValue("relative_tolerance", 1e-11)
+                # r.integrator.setValue("absolute_tolerance", 1e-17)
+                r.simulate(0, 500, 50000)
                 post_sim = time.perf_counter()
                 loadtime[bstr][sbmlfile].append(post_load - pre)
                 simtime[bstr][sbmlfile].append(post_sim - post_load)
             except Exception as e:
                 print(sbmlfile)
                 print(e)
+                badfiles.write(sbmlfile + "\n")
+
+badfiles.close()
 
 writeFullCSV("individual_times.csv") 

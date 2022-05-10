@@ -8,20 +8,32 @@ Created on Wed May  4 12:22:47 2022
 import roadrunner
 from os import walk
 import time
-import concurrent
+import concurrent.futures
 import numpy as np
 from scriptLib import getSBMLFilesFromBiomodels
 
 roadrunner.Config.setValue(roadrunner.Config.LOADSBMLOPTIONS_RECOMPILE, True)
 nrepeats = 10
-ncores = 23
+ncores = 24
+onlySomeSBML = False
+
+badtol = open("badtol.txt", "w")
 
 def loadOnly(sbmlfile):
+    roadrunner.Config.setValue(roadrunner.Config.LOADSBMLOPTIONS_RECOMPILE, True)
     roadrunner.RoadRunner(sbmlfile)
     
 def loadAndSimulate(sbmlfile):
-    r = roadrunner.RoadRunner(sbmlfile)
-    r.simulate(0, 10, 100)
+    roadrunner.Config.setValue(roadrunner.Config.LOADSBMLOPTIONS_RECOMPILE, True)
+    try:
+        r = roadrunner.RoadRunner(sbmlfile)
+        r.simulate(0, 500, 50000)
+    except Exception as e:
+        print(sbmlfile)
+        badtol.write(sbmlfile + "\n")
+        print(e)
+        raise Exception(sbmlfile + ": " + e.what())
+
     
 def runExperiment(sbmlfiles, nrepeats, ncores, function, allcores):
     timevecs = {}
@@ -87,8 +99,12 @@ def saveTimeVecs(timevecs, threadrange, filename):
     out.close()
     
 if __name__ == '__main__':
-    sbmlfiles = getSBMLFilesFromBiomodels(biomds = "C:/Users/Lucian/Desktop/temp-biomodels/final")
+    sbmlfiles = getSBMLFilesFromBiomodels(biomds = "../temp-biomodels/final")
+    if (onlySomeSBML):
+        sbmlfiles = sbmlfiles[:50]
+    print("Just load files:")
     (timevecs, threadrange) = runExperiment(sbmlfiles, nrepeats, ncores, loadOnly, True)
     saveTimeVecs(timevecs, threadrange, "fig1_only_load.csv")
+    print("Load and simulate files:")
     (timevecs, threadrange) = runExperiment(sbmlfiles, nrepeats, ncores, loadAndSimulate, False)
     saveTimeVecs(timevecs, threadrange, "fig2_load_and_sim.csv")
