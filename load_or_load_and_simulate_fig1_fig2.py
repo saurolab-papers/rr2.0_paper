@@ -42,7 +42,12 @@ def runExperiment(sbmlfiles, nrepeats, ncores, function, allcores):
     if allcores:
         threadrange = range(ncores)
     else:
-        threadrange = [0, 1, ncores-1]
+        if ncores < 1:
+            threadrange = [0]
+        elif ncores < 2:
+            threadrange = [0, 1]
+        else:
+            threadrange = [0, 1, ncores-1]
     for nthread in threadrange:
         timevecs["LLJit"][nthread] = []
         timevecs["MCJit"][nthread] = []
@@ -59,7 +64,7 @@ def runExperiment(sbmlfiles, nrepeats, ncores, function, allcores):
                     print("Starting non-parallel run.  Repeat", repeat+1, "backend", bstr)
                     start = time.perf_counter()
                     for sbmlfile in sbmlfiles:
-                        loadOnly(sbmlfile)
+                        function(sbmlfile)
                     
                 end = time.perf_counter()
                 timevecs[bstr][nthreads].append(end-start)
