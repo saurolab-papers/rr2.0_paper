@@ -26,7 +26,7 @@ def runMapExperiment(sbmlfiles, nrepeats, ncores):
         for nthreads in threadrange:
             for (backend, bstr) in [(roadrunner.Config.LLJIT, "LLJit"), (roadrunner.Config.MCJIT, "MCJit")]:
                 roadrunner.Config.setValue(roadrunner.Config.LLVM_BACKEND, backend)
-                print("Starting run with", nthreads, "threads, repeat", repeat+1, "backend", bstr)
+                print("Starting run with", nthreads+1, "threads, repeat", repeat+1, "backend", bstr)
                 start = time.perf_counter()
                 roadrunner.RoadRunnerMap(sbmlfiles, nthreads+1)
                 end = time.perf_counter()
