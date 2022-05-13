@@ -64,35 +64,33 @@ def getSBMLFilesFromBiomodels(biomds = "C:/Users/Lucian/Desktop/temp-biomodels/f
     #sbmlfiles = sbmlfiles[:10]
     return sbmlfiles
 
-def saveTimeVecs(timevecs, threadrange, filename):
+def saveTimeVecs(timevecs, threadrange, filename, backends):
     out = open(filename, "w")
     out.write("Ntheads")
     out.write(",")
-    out.write("LLJit")
-    out.write(",")
-    out.write("MCJit")
-    out.write(",")
-    out.write("err LLJit")
-    out.write(",")
-    out.write("err MCJit")
+    for backend in backends:
+        out.write(backend)
+        out.write(",")
+    for backend in backends:
+        out.write("err " + backend)
+        out.write(",")
     out.write("\n")
     
     for nthread in threadrange:
-        LLaverage = np.average(timevecs["LLJit"][nthread])
-        LLstd = np.std(timevecs["LLJit"][nthread])
-        MCaverage = np.average(timevecs["MCJit"][nthread])
-        MCstd = np.std(timevecs["MCJit"][nthread])
-        ratio = MCaverage / LLaverage
+        averages = {}
+        stds = {}
+        for backend in backends:
+            averages[backend] = np.average(timevecs[backend][nthread])
+            stds[backend] = np.std(timevecs[backend][nthread])
         
         out.write(str(nthread))
         out.write(",")
-        out.write(str(LLaverage))
-        out.write(",")
-        out.write(str(MCaverage))
-        out.write(",")
-        out.write(str(LLstd))
-        out.write(",")
-        out.write(str(MCstd))
+        for backend in backends:
+            out.write(str(averages[backend]))
+            out.write(",")
+        for backend in backends:
+            out.write(str(stds[backend]))
+            out.write(",")
         out.write("\n")
     out.close()
     

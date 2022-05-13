@@ -13,7 +13,7 @@ from scriptLib import getSBMLFilesFromBiomodels, saveTimeVecs
 roadrunner.Config.setValue(roadrunner.Config.LOADSBMLOPTIONS_RECOMPILE, True)
 nrepeats = 10
 ncores = 24
-onlySomeSBML = False
+onlySomeSBML = True
 
 badtol = open("badtol.txt", "w")
 
@@ -35,8 +35,7 @@ def loadAndSimulate(sbmlfile):
     
 def runExperiment(sbmlfiles, nrepeats, ncores, function, allcores):
     timevecs = {}
-    timevecs["LLJit"] = {}
-    timevecs["MCJit"] = {}
+    timevecs["rr1.6.1"] = {}
     if allcores:
         threadrange = range(ncores)
     else:
@@ -47,22 +46,20 @@ def runExperiment(sbmlfiles, nrepeats, ncores, function, allcores):
         else:
             threadrange = [0, 1, ncores-1]
     for nthread in threadrange:
-        timevecs["LLJit"][nthread] = []
-        timevecs["MCJit"][nthread] = []
+        timevecs["rr1.6.1"][nthread] = []
     for repeat in range(nrepeats):
         for nthreads in threadrange:
-            for (backend, bstr) in [(roadrunner.Config.LLJIT, "LLJit"), (roadrunner.Config.MCJIT, "MCJit")]:
-                roadrunner.Config.setValue(roadrunner.Config.LLVM_BACKEND, backend)
-                if nthreads > 0:
-                    print("Starting run with", nthreads, "threads, repeat", repeat+1, "backend", bstr)
-                    start = time.perf_counter()
-                    with concurrent.futures.ProcessPoolExecutor(max_workers=nthreads) as executor:
-                        executor.map(function, sbmlfiles)
-                else:
-                    print("Starting non-parallel run.  Repeat", repeat+1, "backend", bstr)
-                    start = time.perf_counter()
-                    for sbmlfile in sbmlfiles:
-                        function(sbmlfile)
+            bstr = "rr1.6.1"
+            if nthreads > 0:
+                print("Starting run with", nthreads, "threads, repeat", repeat+1, "backend", bstr)
+                start = time.perf_counter()
+                with concurrent.futures.ProcessPoolExecutor(max_workers=nthreads) as executor:
+                    executor.map(function, sbmlfiles)
+            else:
+                print("Starting non-parallel run.  Repeat", repeat+1, "backend", bstr)
+                start = time.perf_counter()
+                for sbmlfile in sbmlfiles:
+                    function(sbmlfile)
                     
                 end = time.perf_counter()
                 timevecs[bstr][nthreads].append(end-start)
@@ -74,8 +71,8 @@ if __name__ == '__main__':
     if (onlySomeSBML):
         sbmlfiles = sbmlfiles[:50]
     print("Just load files:")
-    (timevecs, threadrange) = runExperiment(sbmlfiles, nrepeats, ncores, loadOnly, True)
-    saveTimeVecs(timevecs, threadrange, "fig1_only_load.csv", ["LLJit", "MCJit"])
+    # (timevecs, threadrange) = runExperiment(sbmlfiles, nrepeats, ncores, loadOnly, True)
+    # saveTimeVecs(timevecs, threadrange, "oldrr_fig1_only_load.csv", ["rr1.6.1"])
     print("Load and simulate files:")
     (timevecs, threadrange) = runExperiment(sbmlfiles, nrepeats, ncores, loadAndSimulate, False)
-    saveTimeVecs(timevecs, threadrange, "fig2_load_and_sim.csv", ["LLJit", "MCJit"])
+    saveTimeVecs(timevecs, threadrange, "oldrr_fig2_load_and_sim.csv", ["rr1.6.1"])
