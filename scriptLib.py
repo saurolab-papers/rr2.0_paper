@@ -1,7 +1,7 @@
 from os import walk
 import numpy as np
 
-def getSBMLFilesFromBiomodels(biomds = "C:/Users/Lucian/Desktop/temp-biomodels/final", oldrr = False):
+def getSBMLFilesFromBiomodels(biomds = "C:/Users/Lucian/Desktop/temp-biomodels/final", oldrr = True):
     delays = ["BIOMD0000000024", "BIOMD0000000025", "BIOMD0000000034", "BIOMD0000000154", "BIOMD0000000155", "BIOMD0000000196", "BIOMD0000000841"]
     toleranceErrors = [
         "BIOMD0000000120",
@@ -39,7 +39,7 @@ def getSBMLFilesFromBiomodels(biomds = "C:/Users/Lucian/Desktop/temp-biomodels/f
         "BIOMD0000000968",
         "BIOMD0000001042",
         ]
-    oldrr_fail = ["BIOMD0000000446", "BIOMD0000000620", "BIOMD0000000621"]
+    oldrr_fail = ["BIOMD0000000235", "BIOMD0000000446", "BIOMD0000000620", "BIOMD0000000621", "BIOMD0000000918"]
     bmfiles = []
     for root, __, files in walk(biomds):
         include = True

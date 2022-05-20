@@ -11,9 +11,10 @@ import concurrent.futures
 from scriptLib import getSBMLFilesFromBiomodels, saveTimeVecs
 
 roadrunner.Config.setValue(roadrunner.Config.LOADSBMLOPTIONS_RECOMPILE, True)
-nrepeats = 10
+nrepeats = 5
 ncores = 24
-onlySomeSBML = False
+onlySomeSBML = True
+rrver = roadrunner.__version__
 
 badtol = open("badtol.txt", "w")
 
@@ -25,6 +26,7 @@ def loadAndSimulate(sbmlfile):
     roadrunner.Config.setValue(roadrunner.Config.LOADSBMLOPTIONS_RECOMPILE, True)
     try:
         r = roadrunner.RoadRunner(sbmlfile)
+        r.setDiffStepSize(0.02)
         r.simulate(0, 500, 50000)
     except Exception as e:
         print(sbmlfile)
@@ -35,7 +37,7 @@ def loadAndSimulate(sbmlfile):
     
 def runExperiment(sbmlfiles, nrepeats, ncores, function, allcores):
     timevecs = {}
-    timevecs["rr1.6.1"] = {}
+    timevecs[rrver] = {}
     if allcores:
         threadrange = range(ncores)
     else:
@@ -44,12 +46,12 @@ def runExperiment(sbmlfiles, nrepeats, ncores, function, allcores):
         elif ncores < 2:
             threadrange = [0, 1]
         else:
-            threadrange = [0, 1, ncores-1]
+            threadrange = [1, ncores-1]
     for nthread in threadrange:
-        timevecs["rr1.6.1"][nthread] = []
+        timevecs[rrver][nthread] = []
     for repeat in range(nrepeats):
         for nthreads in threadrange:
-            bstr = "rr1.6.1"
+            bstr = rrver
             if nthreads > 0:
                 print("Starting run with", nthreads, "threads, repeat", repeat+1, "backend", bstr)
                 start = time.perf_counter()
@@ -69,10 +71,10 @@ def runExperiment(sbmlfiles, nrepeats, ncores, function, allcores):
 if __name__ == '__main__':
     sbmlfiles = getSBMLFilesFromBiomodels(biomds = "../temp-biomodels/final", oldrr=True)
     if (onlySomeSBML):
-        sbmlfiles = sbmlfiles[:50]
+        sbmlfiles = sbmlfiles[:250]
     print("Just load files:")
-    (timevecs, threadrange) = runExperiment(sbmlfiles, nrepeats, ncores, loadOnly, True)
-    saveTimeVecs(timevecs, threadrange, "oldrr_fig1_only_load.csv", ["rr1.6.1"])
+    #(timevecs, threadrange) = runExperiment(sbmlfiles, nrepeats, ncores, loadOnly, True)
+    #saveTimeVecs(timevecs, threadrange, "oldrr_fig1_only_load.csv", ["rr1.6.1"])
     print("Load and simulate files:")
     (timevecs, threadrange) = runExperiment(sbmlfiles, nrepeats, ncores, loadAndSimulate, False)
-    saveTimeVecs(timevecs, threadrange, "oldrr_fig2_load_and_sim.csv", ["rr1.6.1"])
+    saveTimeVecs(timevecs, threadrange, "rr_" + rrver + "_fig2_load_and_sim.csv", [rrver])
