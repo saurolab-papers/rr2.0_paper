@@ -79,14 +79,19 @@ def saveTimeVecs(timevecs, threadrange, filename, backends):
     for backend in backends:
         out.write("err " + backend)
         out.write(",")
+    for backend in backends:
+        out.write("min " + backend)
+        out.write(",")
     out.write("\n")
     
     for nthread in threadrange:
         averages = {}
         stds = {}
+        mins = {}
         for backend in backends:
             averages[backend] = np.average(timevecs[backend][nthread])
             stds[backend] = np.std(timevecs[backend][nthread])
+            mins[backend] = min(timevecs[backend][nthread])
         
         out.write(str(nthread))
         out.write(",")
@@ -95,6 +100,9 @@ def saveTimeVecs(timevecs, threadrange, filename, backends):
             out.write(",")
         for backend in backends:
             out.write(str(stds[backend]))
+            out.write(",")
+        for backend in backends:
+            out.write(str(mins[backend]))
             out.write(",")
         out.write("\n")
     out.close()

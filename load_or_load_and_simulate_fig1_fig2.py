@@ -73,6 +73,7 @@ if __name__ == '__main__':
     sbmlfiles = getSBMLFilesFromBiomodels(biomds = "../temp-biomodels/final")
     if (onlySomeSBML):
         sbmlfiles = sbmlfiles[:50]
+    print("Total number of model files:", len(sbmlfiles))
     print("Just load files:")
     (timevecs, threadrange) = runExperiment(sbmlfiles, nrepeats, ncores, loadOnly, True)
     saveTimeVecs(timevecs, threadrange, "fig1_only_load.csv", ["LLJit", "MCJit"])
