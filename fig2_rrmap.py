@@ -40,4 +40,4 @@ if __name__ == '__main__':
         sbmlfiles = sbmlfiles[:50]
     print("Run RoadRunnerMap experiment:")
     (timevecs, threadrange) = runMapExperiment(sbmlfiles, nrepeats, ncores)
-    saveTimeVecs(timevecs, threadrange, "fig1_rrmap.csv")
+    saveTimeVecs(timevecs, threadrange, "fig1_data_rrmap.csv", ["LLJit", "MCJit"])
