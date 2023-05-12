@@ -1,0 +1,41 @@
+Tool,Repeat,Time (sec),Failures
+RoadRunner Serial (MCJit),1,134.47,20
+RoadRunner Serial (MCJit),2,136.35,20
+RoadRunner Serial (MCJit),3,142.45,20
+RoadRunner Serial (MCJit),4,137.07,20
+RoadRunner Serial (MCJit),5,144.94,20
+RoadRunner multithreading (MCJit),1,52.699562311172485
+RoadRunner multithreading (MCJit),2,60.58261823654175
+RoadRunner multithreading (MCJit),3,53.97505736351013
+RoadRunner multithreading (MCJit),4,56.386879682540894
+RoadRunner multithreading (MCJit),5,53.52746891975403
+RoadRunnerMap (MCJit),1,30.22,20
+RoadRunnerMap (MCJit),2,34.92,20
+RoadRunnerMap (MCJit),3,35.25,20
+RoadRunnerMap (MCJit),4,40.7,20
+RoadRunnerMap (MCJit),5,32.46,20
+RoadRunner Serial (LLJit),1,48.51,20
+RoadRunner Serial (LLJit),2,38.57,20
+RoadRunner Serial (LLJit),3,38.07,20
+RoadRunner Serial (LLJit),4,38.09,20
+RoadRunner Serial (LLJit),5,38.27,20
+RoadRunner multithreading (LLJit),1,34.580451250076294
+RoadRunner multithreading (LLJit),2,33.66169810295105
+RoadRunner multithreading (LLJit),3,30.164960622787476
+RoadRunner multithreading (LLJit),4,32.074339151382446
+RoadRunner multithreading (LLJit),5,32.43431615829468
+RoadRunnerMap (LLJit),1,22.11,20
+RoadRunnerMap (LLJit),2,25.44,20
+RoadRunnerMap (LLJit),3,25.91,20
+RoadRunnerMap (LLJit),4,24.67,20
+RoadRunnerMap (LLJit),5,25.26,20
+Copasi Serial,1,163.53,18
+Copasi Serial,2,166.38,18
+Copasi Serial,3,164.32,18
+Copasi Serial,4,166.51,18
+Copasi Serial,5,157.41,18
+Copasi multithreading,1,64.15,18
+Copasi multithreading,2,72.06,18
+Copasi multithreading,3,64.87,18
+Copasi multithreading,4,66.15,18
+Copasi multithreading,5,72.38,18
